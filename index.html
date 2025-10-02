@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Blue Tapy Completo</title>
+  <title>Blue Tapy</title>
   <style>
     body {
       margin: 0;
-      background: #1e1e1e;
+      background: #1a1a1a;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,50 +16,63 @@
       background: #333;
       border: 3px solid #fff;
     }
+    /* esconde as imagens da tela */
+    #sprites {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="600"></canvas>
 
+  <!-- Todas as imagens ficam aqui escondidas -->
+  <div id="sprites">
+    <img id="up1" src="up1.png">
+    <img id="up2" src="up2.png">
+    <img id="down1" src="down1.png">
+    <img id="down2" src="down2.png">
+    <img id="left1" src="left1.png">
+    <img id="left2" src="left2.png">
+    <img id="right1" src="right1.png">
+    <img id="right2" src="right2.png">
+    <img id="mati1" src="mati1.png">
+    <img id="mati2" src="mati2.png">
+    <img id="mati1a" src="mati1a.png">
+    <img id="sleep1" src="sleep1.png">
+    <img id="sleep2" src="sleep2.png">
+    <img id="akubi1" src="akubi1.png">
+    <img id="akubi2" src="akubi2.png">
+    <img id="awake" src="awake.png">
+  </div>
+
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Função para carregar imagens
-    function loadImage(src) {
-      const img = new Image();
-      img.src = src;
-      return img;
-    }
-
-    // Mapear sprites
+    // pegar imagens pelo ID
     const sprites = {
-      up: [loadImage("up1.png"), loadImage("up2.png")],
-      down: [loadImage("down1.png"), loadImage("down2.png")],
-      left: [loadImage("left1.png"), loadImage("left2.png")],
-      right: [loadImage("right1.png"), loadImage("right2.png")],
-
-      idle: [loadImage("mati1.png"), loadImage("mati2.png"), loadImage("mati1a.png")],
-      sleep: [loadImage("sleep1.png"), loadImage("sleep2.png")],
-      yawn: [loadImage("akubi1.png"), loadImage("akubi2.png")],
-      scratch: [loadImage("kaki1.png"), loadImage("kaki2.png")],
-
-      awake: [loadImage("awake.png")]
+      up: [document.getElementById("up1"), document.getElementById("up2")],
+      down: [document.getElementById("down1"), document.getElementById("down2")],
+      left: [document.getElementById("left1"), document.getElementById("left2")],
+      right: [document.getElementById("right1"), document.getElementById("right2")],
+      idle: [document.getElementById("mati1"), document.getElementById("mati2"), document.getElementById("mati1a")],
+      sleep: [document.getElementById("sleep1"), document.getElementById("sleep2")],
+      yawn: [document.getElementById("akubi1"), document.getElementById("akubi2")],
+      awake: [document.getElementById("awake")]
     };
 
     let x = 400, y = 300;
     let speed = 2;
     let frame = 0;
-    let direction = "down";
     let currentAnim = "idle";
     let lastMoveTime = Date.now();
-
     const keys = {};
 
     window.addEventListener("keydown", e => {
       keys[e.key] = true;
       lastMoveTime = Date.now();
     });
+
     window.addEventListener("keyup", e => {
       keys[e.key] = false;
     });
@@ -69,25 +82,21 @@
 
       if (keys["ArrowUp"] || keys["w"]) {
         y -= speed;
-        direction = "up";
         currentAnim = "up";
         moving = true;
       }
       if (keys["ArrowDown"] || keys["s"]) {
         y += speed;
-        direction = "down";
         currentAnim = "down";
         moving = true;
       }
       if (keys["ArrowLeft"] || keys["a"]) {
         x -= speed;
-        direction = "left";
         currentAnim = "left";
         moving = true;
       }
       if (keys["ArrowRight"] || keys["d"]) {
         x += speed;
-        direction = "right";
         currentAnim = "right";
         moving = true;
       }
@@ -96,18 +105,11 @@
         frame = (frame + 1) % sprites[currentAnim].length;
         lastMoveTime = Date.now();
       } else {
-        // Se ficar parado, mudar animação com base no tempo
         let idleTime = Date.now() - lastMoveTime;
-        if (idleTime < 5000) {
-          currentAnim = "idle";
-        } else if (idleTime < 10000) {
-          currentAnim = "yawn";
-        } else if (idleTime < 15000) {
-          currentAnim = "sleep";
-        } else {
-          currentAnim = "awake";
-          lastMoveTime = Date.now(); // reinicia ciclo
-        }
+        if (idleTime < 5000) currentAnim = "idle";
+        else if (idleTime < 10000) currentAnim = "yawn";
+        else if (idleTime < 15000) currentAnim = "sleep";
+        else { currentAnim = "awake"; lastMoveTime = Date.now(); }
         frame = (frame + 1) % sprites[currentAnim].length;
       }
     }
@@ -129,4 +131,4 @@
     loop();
   </script>
 </body>
-  </html>
+</html>
