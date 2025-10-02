@@ -1,134 +1,181 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Blue Tapy</title>
-  <style>
-    body {
-      margin: 0;
-      background: #1a1a1a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    canvas {
-      background: #333;
-      border: 3px solid #fff;
-    }
-    /* esconde as imagens da tela */
-    #sprites {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Blue Tapy - Visualizador de Animações</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #2e4d3a; /* Cor de fundo (verde escuro da imagem) */
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        #animationContainer {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        #petImage {
+            image-rendering: pixelated; /* Mantém o estilo pixel art */
+            width: 64px;
+            height: 64px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #00bcd4; /* Azul ciano */
+            color: black;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-  <!-- Todas as imagens ficam aqui escondidas -->
-  <div id="sprites">
-    <img id="up1" src="up1.png">
-    <img id="up2" src="up2.png">
-    <img id="down1" src="down1.png">
-    <img id="down2" src="down2.png">
-    <img id="left1" src="left1.png">
-    <img id="left2" src="left2.png">
-    <img id="right1" src="right1.png">
-    <img id="right2" src="right2.png">
-    <img id="mati1" src="mati1.png">
-    <img id="mati2" src="mati2.png">
-    <img id="mati1a" src="mati1a.png">
-    <img id="sleep1" src="sleep1.png">
-    <img id="sleep2" src="sleep2.png">
-    <img id="akubi1" src="akubi1.png">
-    <img id="akubi2" src="akubi2.png">
-    <img id="awake" src="awake.png">
-  </div>
+    <h1>Blue Tapy Animações</h1>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    <div id="animationContainer">
+        <img id="petImage" src="icon.png" alt="Blue Tapy Pet">
+    </div>
 
-    // pegar imagens pelo ID
-    const sprites = {
-      up: [document.getElementById("up1"), document.getElementById("up2")],
-      down: [document.getElementById("down1"), document.getElementById("down2")],
-      left: [document.getElementById("left1"), document.getElementById("left2")],
-      right: [document.getElementById("right1"), document.getElementById("right2")],
-      idle: [document.getElementById("mati1"), document.getElementById("mati2"), document.getElementById("mati1a")],
-      sleep: [document.getElementById("sleep1"), document.getElementById("sleep2")],
-      yawn: [document.getElementById("akubi1"), document.getElementById("akubi2")],
-      awake: [document.getElementById("awake")]
-    };
+    <p>Movimento Atual: <span id="currentMotion">stop</span></p>
 
-    let x = 400, y = 300;
-    let speed = 2;
-    let frame = 0;
-    let currentAnim = "idle";
-    let lastMoveTime = Date.now();
-    const keys = {};
+    <div class="controls">
+        <button onclick="startAnimation('stop')">Stop</button>
+        <button onclick="startAnimation('moveDown')">Move Down</button>
+        <button onclick="startAnimation('wallDown')">Wall Down (Simulado)</button>
+    </div>
 
-    window.addEventListener("keydown", e => {
-      keys[e.key] = true;
-      lastMoveTime = Date.now();
-    });
+    <script>
+        const petImage = document.getElementById('petImage');
+        const currentMotionDisplay = document.getElementById('currentMotion');
+        let currentTimeout = null;
 
-    window.addEventListener("keyup", e => {
-      keys[e.key] = false;
-    });
+        // Mapeamento de Drawables para Nomes de Arquivo (baseado nos arquivos fornecidos e no XML)
+        const drawables = {
+            // Stop motion drawables (baseado no XML e arquivos fornecidos)
+            "mati1": "mati1.png",
+            "mati1a": "mati1.png", // 'mati1a' não foi fornecida, usando 'mati1' como fallback
+            "kaki1": "mati1.png",   // 'kaki1' e 'kaki2' não foram fornecidas, usando 'mati1' como fallback
+            "kaki2": "mati1.png",   
+            "mati2": "mati2.png",
+            "akubi2": "mati2.png",  // 'akubi2' não foi fornecida, usando 'mati2' como fallback
+            "sleep1": "sleep1.png",
+            "sleep2": "sleep1.png", // 'sleep2' não foi fornecida, usando 'sleep1' como fallback
 
-    function update() {
-      let moving = false;
+            // moveDown drawables
+            "down1": "down1.png",
+            "down2": "down2.png",
 
-      if (keys["ArrowUp"] || keys["w"]) {
-        y -= speed;
-        currentAnim = "up";
-        moving = true;
-      }
-      if (keys["ArrowDown"] || keys["s"]) {
-        y += speed;
-        currentAnim = "down";
-        moving = true;
-      }
-      if (keys["ArrowLeft"] || keys["a"]) {
-        x -= speed;
-        currentAnim = "left";
-        moving = true;
-      }
-      if (keys["ArrowRight"] || keys["d"]) {
-        x += speed;
-        currentAnim = "right";
-        moving = true;
-      }
+            // wallDown drawables
+            "dtogi1": "dtogi2.png", // 'dtogi1' está faltando, usando 'dtogi2' como substituto
+            "dtogi2": "dtogi2.png",
+        };
 
-      if (moving) {
-        frame = (frame + 1) % sprites[currentAnim].length;
-        lastMoveTime = Date.now();
-      } else {
-        let idleTime = Date.now() - lastMoveTime;
-        if (idleTime < 5000) currentAnim = "idle";
-        else if (idleTime < 10000) currentAnim = "yawn";
-        else if (idleTime < 15000) currentAnim = "sleep";
-        else { currentAnim = "awake"; lastMoveTime = Date.now(); }
-        frame = (frame + 1) % sprites[currentAnim].length;
-      }
-    }
+        // Estrutura de movimentos (baseada no skin.xml)
+        const motions = {
+            "stop": [
+                { drawable: "mati1", duration: 5000 },
+                { drawable: "mati1a", duration: 80 },
+                { drawable: "mati1", duration: 5000 },
+                // Simulação do loop de 'kaki'
+                ...Array(6).fill([
+                    { drawable: "kaki1", duration: 250 },
+                    { drawable: "kaki2", duration: 250 }
+                ]).flat(),
+                { drawable: "mati1", duration: 1000 },
+            ],
+            "moveDown": [
+                // Repete indefinidamente (simulando <repeat-item>)
+                { drawable: "down1", duration: 250 },
+                { drawable: "down2", duration: 250 }
+            ],
+            "wallDown": [
+                // Repete 6 vezes (simulando <repeat-item repeatCount="6">)
+                ...Array(6).fill([
+                    { drawable: "dtogi1", duration: 250 },
+                    { drawable: "dtogi2", duration: 250 },
+                    { drawable: "dtogi1", duration: 250 },
+                    { drawable: "dtogi2", duration: 250 },
+                    { drawable: "dtogi1", duration: 250 },
+                    { drawable: "dtogi2", duration: 250 },
+                    { drawable: "dtogi1", duration: 250 },
+                    { drawable: "dtogi2", duration: 250 },
+                    { drawable: "dtogi1", duration: 250 },
+                    { drawable: "dtogi2", duration: 250 }
+                ]).flat()
+            ]
+        };
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let animFrames = sprites[currentAnim];
-      if (animFrames && animFrames.length > 0) {
-        ctx.drawImage(animFrames[frame], x, y, 96, 96);
-      }
-    }
+        let isLooping = false;
+        let motionName = 'stop';
 
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
+        function animateMotion(steps, index = 0) {
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
+            }
 
-    loop();
-  </script>
+            if (index >= steps.length) {
+                // Se for moveDown, ele deve ser infinito (loop)
+                if (motionName === 'moveDown' || isLooping) {
+                    index = 0; // Reinicia o loop
+                } else {
+                    // Para os movimentos não-looping (como stop e wallDown no final)
+                    // O XML diz nextState="wait" ou nextState="stop", mas para simplificar, voltaremos para 'stop' no HTML.
+                    startAnimation('stop');
+                    return;
+                }
+            }
+
+            const step = steps[index];
+            const nextDrawable = drawables[step.drawable];
+
+            if (nextDrawable) {
+                petImage.src = nextDrawable;
+            } else {
+                console.warn(`Drawable não encontrado para: ${step.drawable}. Usando imagem atual.`);
+            }
+
+            currentTimeout = setTimeout(() => {
+                animateMotion(steps, index + 1);
+            }, step.duration);
+        }
+
+        function startAnimation(newMotionName) {
+            motionName = newMotionName;
+            currentMotionDisplay.textContent = motionName;
+            
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
+            }
+
+            const motionSteps = motions[motionName];
+            if (motionSteps) {
+                // A flag isLooping é usada para 'moveDown' para simular a tag <repeat-item> sem repeatCount.
+                isLooping = (motionName === 'moveDown'); 
+                animateMotion(motionSteps);
+            } else {
+                console.error(`Movimento '${motionName}' não encontrado.`);
+            }
+        }
+
+        // Inicia a animação 'stop' por padrão ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            startAnimation('stop');
+        });
+    </script>
+
 </body>
 </html>
