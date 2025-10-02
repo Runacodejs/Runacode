@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Blue Tapy Completo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #1e1e1e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      background: #333;
+      border: 3px solid #fff;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Função para carregar imagens
+    function loadImage(src) {
+      const img = new Image();
+      img.src = src;
+      return img;
+    }
+
+    // Mapear sprites
+    const sprites = {
+      up: [loadImage("up1.png"), loadImage("up2.png")],
+      down: [loadImage("down1.png"), loadImage("down2.png")],
+      left: [loadImage("left1.png"), loadImage("left2.png")],
+      right: [loadImage("right1.png"), loadImage("right2.png")],
+
+      idle: [loadImage("mati1.png"), loadImage("mati2.png"), loadImage("mati1a.png")],
+      sleep: [loadImage("sleep1.png"), loadImage("sleep2.png")],
+      yawn: [loadImage("akubi1.png"), loadImage("akubi2.png")],
+      scratch: [loadImage("kaki1.png"), loadImage("kaki2.png")],
+
+      awake: [loadImage("awake.png")]
+    };
+
+    let x = 400, y = 300;
+    let speed = 2;
+    let frame = 0;
+    let direction = "down";
+    let currentAnim = "idle";
+    let lastMoveTime = Date.now();
+
+    const keys = {};
+
+    window.addEventListener("keydown", e => {
+      keys[e.key] = true;
+      lastMoveTime = Date.now();
+    });
+    window.addEventListener("keyup", e => {
+      keys[e.key] = false;
+    });
+
+    function update() {
+      let moving = false;
+
+      if (keys["ArrowUp"] || keys["w"]) {
+        y -= speed;
+        direction = "up";
+        currentAnim = "up";
+        moving = true;
+      }
+      if (keys["ArrowDown"] || keys["s"]) {
+        y += speed;
+        direction = "down";
+        currentAnim = "down";
+        moving = true;
+      }
+      if (keys["ArrowLeft"] || keys["a"]) {
+        x -= speed;
+        direction = "left";
+        currentAnim = "left";
+        moving = true;
+      }
+      if (keys["ArrowRight"] || keys["d"]) {
+        x += speed;
+        direction = "right";
+        currentAnim = "right";
+        moving = true;
+      }
+
+      if (moving) {
+        frame = (frame + 1) % sprites[currentAnim].length;
+        lastMoveTime = Date.now();
+      } else {
+        // Se ficar parado, mudar animação com base no tempo
+        let idleTime = Date.now() - lastMoveTime;
+        if (idleTime < 5000) {
+          currentAnim = "idle";
+        } else if (idleTime < 10000) {
+          currentAnim = "yawn";
+        } else if (idleTime < 15000) {
+          currentAnim = "sleep";
+        } else {
+          currentAnim = "awake";
+          lastMoveTime = Date.now(); // reinicia ciclo
+        }
+        frame = (frame + 1) % sprites[currentAnim].length;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let animFrames = sprites[currentAnim];
+      if (animFrames && animFrames.length > 0) {
+        ctx.drawImage(animFrames[frame], x, y, 96, 96);
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+  </html>
