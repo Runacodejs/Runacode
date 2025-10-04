@@ -1,181 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Blue Tapy - Visualizador de Animações</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #2e4d3a; /* Cor de fundo (verde escuro da imagem) */
-            font-family: Arial, sans-serif;
-            color: white;
-        }
-        #animationContainer {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        #petImage {
-            image-rendering: pixelated; /* Mantém o estilo pixel art */
-            width: 64px;
-            height: 64px;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #00bcd4; /* Azul ciano */
-            color: black;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Math Solver</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #3f87a6, #ebf8e1);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+  }
+
+  .container {
+    background: white;
+    border-radius: 20px;
+    padding: 30px 40px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+  }
+
+  h1 {
+    color: #3f87a6;
+    margin-bottom: 10px;
+    font-size: 28px;
+    text-shadow: 0 0 6px rgba(63,135,166,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  svg {
+    width: 40px;
+    height: 40px;
+    animation: girar 4s linear infinite;
+  }
+
+  @keyframes girar {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    outline: none;
+    transition: border 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: #3f87a6;
+  }
+
+  button, label {
+    margin-top: 15px;
+    background: #3f87a6;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-block;
+  }
+
+  button:hover, label:hover {
+    background: #336b84;
+  }
+
+  #foto { display: none; }
+
+  .preview {
+    margin-top: 15px;
+    display: none;
+  }
+
+  .preview img {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  }
+
+  .resultado {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #222;
+    font-weight: bold;
+  }
+
+  footer {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dev-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #007BFF;
+    position: relative;
+    animation: brilho 2s infinite;
+    transition: transform 0.2s;
+  }
+
+  .dev-link:hover { transform: scale(1.1); }
+
+  .github-icon { width: 18px; height: 18px; filter: drop-shadow(0 0 2px #007BFF); }
+
+  .direitos { font-size: 12px; color: #666; margin-top: 5px; }
+
+  @keyframes brilho {
+    0%,100% { text-shadow: 0 0 5px #007BFF,0 0 10px #007BFF,0 0 20px #007BFF; }
+    50% { text-shadow: 0 0 15px #3399FF,0 0 30px #66CCFF,0 0 45px #99DDFF; }
+  }
+</style>
 </head>
 <body>
+<div class="container">
+  <h1>
+    <!-- Logo SVG cérebro + símbolos matemáticos -->
+    <svg viewBox="0 0 64 64" fill="#3f87a6">
+      <path d="M32 2C20 2 12 10 12 22c0 7 4 14 10 18v4h8v-4c6-4 10-11 10-18 0-12-8-20-18-20z"/>
+      <text x="32" y="38" font-size="18" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold">+</text>
+    </svg>
+    Super Math Solver
+  </h1>
 
-    <h1>Blue Tapy Animações</h1>
+  <input id="expressao" type="text" placeholder="Digite uma expressão (ex: 12/3+5)">
+  <button onclick="resolver()">Resolver</button>
 
-    <div id="animationContainer">
-        <img id="petImage" src="icon.png" alt="Blue Tapy Pet">
-    </div>
+  <div style="margin-top: 10px;">
+    <label for="foto">📷 Tirar/Enviar Foto</label>
+    <input type="file" id="foto" accept="image/*" capture="camera" onchange="mostrarFoto(event)">
+  </div>
 
-    <p>Movimento Atual: <span id="currentMotion">stop</span></p>
+  <div class="preview" id="preview">
+    <p>Imagem selecionada:</p>
+    <img id="imgPreview" src="" alt="Foto da tarefa">
+  </div>
 
-    <div class="controls">
-        <button onclick="startAnimation('stop')">Stop</button>
-        <button onclick="startAnimation('moveDown')">Move Down</button>
-        <button onclick="startAnimation('wallDown')">Wall Down (Simulado)</button>
-    </div>
+  <div class="resultado" id="resultado"></div>
 
-    <script>
-        const petImage = document.getElementById('petImage');
-        const currentMotionDisplay = document.getElementById('currentMotion');
-        let currentTimeout = null;
+  <footer>
+    💡 Desenvolvido por 
+    <a class="dev-link" href="https://github.com/Kel-mod" target="_blank">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" class="github-icon" alt="GitHub">
+      Kel_mod
+    </a>
+    <div class="direitos">© 2025 Kel_mod — Todos os direitos reservados.</div>
+  </footer>
+</div>
 
-        // Mapeamento de Drawables para Nomes de Arquivo (baseado nos arquivos fornecidos e no XML)
-        const drawables = {
-            // Stop motion drawables (baseado no XML e arquivos fornecidos)
-            "mati1": "mati1.png",
-            "mati1a": "mati1.png", // 'mati1a' não foi fornecida, usando 'mati1' como fallback
-            "kaki1": "mati1.png",   // 'kaki1' e 'kaki2' não foram fornecidas, usando 'mati1' como fallback
-            "kaki2": "mati1.png",   
-            "mati2": "mati2.png",
-            "akubi2": "mati2.png",  // 'akubi2' não foi fornecida, usando 'mati2' como fallback
-            "sleep1": "sleep1.png",
-            "sleep2": "sleep1.png", // 'sleep2' não foi fornecida, usando 'sleep1' como fallback
+<script>
+function resolver() {
+  const entrada = document.getElementById("expressao").value;
+  const saida = document.getElementById("resultado");
+  try {
+    const resposta = eval(entrada);
+    saida.textContent = "Resultado: " + resposta;
+  } catch (erro) {
+    saida.textContent = "Expressão inválida!";
+  }
+}
 
-            // moveDown drawables
-            "down1": "down1.png",
-            "down2": "down2.png",
-
-            // wallDown drawables
-            "dtogi1": "dtogi2.png", // 'dtogi1' está faltando, usando 'dtogi2' como substituto
-            "dtogi2": "dtogi2.png",
-        };
-
-        // Estrutura de movimentos (baseada no skin.xml)
-        const motions = {
-            "stop": [
-                { drawable: "mati1", duration: 5000 },
-                { drawable: "mati1a", duration: 80 },
-                { drawable: "mati1", duration: 5000 },
-                // Simulação do loop de 'kaki'
-                ...Array(6).fill([
-                    { drawable: "kaki1", duration: 250 },
-                    { drawable: "kaki2", duration: 250 }
-                ]).flat(),
-                { drawable: "mati1", duration: 1000 },
-            ],
-            "moveDown": [
-                // Repete indefinidamente (simulando <repeat-item>)
-                { drawable: "down1", duration: 250 },
-                { drawable: "down2", duration: 250 }
-            ],
-            "wallDown": [
-                // Repete 6 vezes (simulando <repeat-item repeatCount="6">)
-                ...Array(6).fill([
-                    { drawable: "dtogi1", duration: 250 },
-                    { drawable: "dtogi2", duration: 250 },
-                    { drawable: "dtogi1", duration: 250 },
-                    { drawable: "dtogi2", duration: 250 },
-                    { drawable: "dtogi1", duration: 250 },
-                    { drawable: "dtogi2", duration: 250 },
-                    { drawable: "dtogi1", duration: 250 },
-                    { drawable: "dtogi2", duration: 250 },
-                    { drawable: "dtogi1", duration: 250 },
-                    { drawable: "dtogi2", duration: 250 }
-                ]).flat()
-            ]
-        };
-
-        let isLooping = false;
-        let motionName = 'stop';
-
-        function animateMotion(steps, index = 0) {
-            if (currentTimeout) {
-                clearTimeout(currentTimeout);
-            }
-
-            if (index >= steps.length) {
-                // Se for moveDown, ele deve ser infinito (loop)
-                if (motionName === 'moveDown' || isLooping) {
-                    index = 0; // Reinicia o loop
-                } else {
-                    // Para os movimentos não-looping (como stop e wallDown no final)
-                    // O XML diz nextState="wait" ou nextState="stop", mas para simplificar, voltaremos para 'stop' no HTML.
-                    startAnimation('stop');
-                    return;
-                }
-            }
-
-            const step = steps[index];
-            const nextDrawable = drawables[step.drawable];
-
-            if (nextDrawable) {
-                petImage.src = nextDrawable;
-            } else {
-                console.warn(`Drawable não encontrado para: ${step.drawable}. Usando imagem atual.`);
-            }
-
-            currentTimeout = setTimeout(() => {
-                animateMotion(steps, index + 1);
-            }, step.duration);
-        }
-
-        function startAnimation(newMotionName) {
-            motionName = newMotionName;
-            currentMotionDisplay.textContent = motionName;
-            
-            if (currentTimeout) {
-                clearTimeout(currentTimeout);
-            }
-
-            const motionSteps = motions[motionName];
-            if (motionSteps) {
-                // A flag isLooping é usada para 'moveDown' para simular a tag <repeat-item> sem repeatCount.
-                isLooping = (motionName === 'moveDown'); 
-                animateMotion(motionSteps);
-            } else {
-                console.error(`Movimento '${motionName}' não encontrado.`);
-            }
-        }
-
-        // Inicia a animação 'stop' por padrão ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            startAnimation('stop');
-        });
-    </script>
-
+function mostrarFoto(event) {
+  const previewDiv = document.getElementById("preview");
+  const img = document.getElementById("imgPreview");
+  const arquivo = event.target.files[0];
+  if (arquivo) {
+    img.src = URL.createObjectURL(arquivo);
+    previewDiv.style.display = "block";
+  }
+}
+</script>
 </body>
 </html>
