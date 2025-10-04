@@ -172,14 +172,25 @@
 </div>
 
 <script>
-function resolver() {
-  const entrada = document.getElementById("expressao").value;
+async function resolver() {
+  const expression = document.getElementById("expressao").value;
   const saida = document.getElementById("resultado");
   try {
-    const resposta = eval(entrada);
-    saida.textContent = "Resultado: " + resposta;
+    const response = await fetch('/solve', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ expression })
+    });
+    const data = await response.json();
+    if (response.ok) {
+      saida.textContent = "Resultado: " + data.result;
+    } else {
+      saida.textContent = data.error || "Expressão inválida!";
+    }
   } catch (erro) {
-    saida.textContent = "Expressão inválida!";
+    saida.textContent = "Erro ao conectar com a API.";
   }
 }
 
