@@ -1,208 +1,53 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Math Solver</title>
-<style>
-  body {
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(135deg, #3f87a6, #ebf8e1);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-  }
-
-  .container {
-    background: white;
-    border-radius: 20px;
-    padding: 30px 40px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    text-align: center;
-    width: 90%;
-    max-width: 420px;
-  }
-
-  h1 {
-    color: #3f87a6;
-    margin-bottom: 10px;
-    font-size: 28px;
-    text-shadow: 0 0 6px rgba(63,135,166,0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-
-  svg {
-    width: 40px;
-    height: 40px;
-    animation: girar 4s linear infinite;
-  }
-
-  @keyframes girar {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(15deg); }
-    100% { transform: rotate(0deg); }
-  }
-
-  input[type="text"] {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    outline: none;
-    transition: border 0.2s;
-  }
-
-  input[type="text"]:focus {
-    border-color: #3f87a6;
-  }
-
-  button, label {
-    margin-top: 15px;
-    background: #3f87a6;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: inline-block;
-  }
-
-  button:hover, label:hover {
-    background: #336b84;
-  }
-
-  #foto { display: none; }
-
-  .preview {
-    margin-top: 15px;
-    display: none;
-  }
-
-  .preview img {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 8px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.2);
-  }
-
-  .resultado {
-    margin-top: 20px;
-    font-size: 20px;
-    color: #222;
-    font-weight: bold;
-  }
-
-  footer {
-    margin-top: 25px;
-    font-size: 13px;
-    color: #555;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .dev-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    color: #007BFF;
-    position: relative;
-    animation: brilho 2s infinite;
-    transition: transform 0.2s;
-  }
-
-  .dev-link:hover { transform: scale(1.1); }
-
-  .github-icon { width: 18px; height: 18px; filter: drop-shadow(0 0 2px #007BFF); }
-
-  .direitos { font-size: 12px; color: #666; margin-top: 5px; }
-
-  @keyframes brilho {
-    0%,100% { text-shadow: 0 0 5px #007BFF,0 0 10px #007BFF,0 0 20px #007BFF; }
-    50% { text-shadow: 0 0 15px #3399FF,0 0 30px #66CCFF,0 0 45px #99DDFF; }
-  }
-</style>
+    <title>Math Solver</title>
 </head>
 <body>
-<div class="container">
-  <h1>
-    <!-- Logo SVG cérebro + símbolos matemáticos -->
-    <svg viewBox="0 0 64 64" fill="#3f87a6">
-      <path d="M32 2C20 2 12 10 12 22c0 7 4 14 10 18v4h8v-4c6-4 10-11 10-18 0-12-8-20-18-20z"/>
-      <text x="32" y="38" font-size="18" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold">+</text>
-    </svg>
-    Super Math Solver
-  </h1>
+    <h1>Math Solver</h1>
+    
+    <h2>Solve by Text</h2>
+    <form id="text-form">
+        <input type="text" id="expression" placeholder="Enter math expression">
+        <button type="submit">Solve</button>
+    </form>
+    
+    <h2>Solve by Image</h2>
+    <form id="image-form" enctype="multipart/form-data">
+        <input type="file" id="image-file" name="image" accept="image/*">
+        <button type="submit">Solve from Image</button>
+    </form>
+    
+    <h2>Result</h2>
+    <div id="result"></div>
 
-  <input id="expressao" type="text" placeholder="Digite uma expressão (ex: 12/3+5)">
-  <button onclick="resolver()">Resolver</button>
+    <script>
+        document.getElementById('text-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const expression = document.getElementById('expression').value;
+            const response = await fetch('/solve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ expression })
+            });
+            const data = await response.json();
+            document.getElementById('result').innerText = JSON.stringify(data);
+        });
 
-  <div style="margin-top: 10px;">
-    <label for="foto">📷 Tirar/Enviar Foto</label>
-    <input type="file" id="foto" accept="image/*" capture="camera" onchange="mostrarFoto(event)">
-  </div>
-
-  <div class="preview" id="preview">
-    <p>Imagem selecionada:</p>
-    <img id="imgPreview" src="" alt="Foto da tarefa">
-  </div>
-
-  <div class="resultado" id="resultado"></div>
-
-  <footer>
-    💡 Desenvolvido por 
-    <a class="dev-link" href="https://github.com/Kel-mod" target="_blank">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" class="github-icon" alt="GitHub">
-      Kel_mod
-    </a>
-    <div class="direitos">© 2025 — Todos os direitos reservados.</div>
-  </footer>
-</div>
-
-<script>
-async function resolver() {
-  const expression = document.getElementById("expressao").value;
-  const saida = document.getElementById("resultado");
-  try {
-    const response = await fetch('/solve', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ expression })
-    });
-    const data = await response.json();
-    if (response.ok) {
-      saida.textContent = "Resultado: " + data.result;
-    } else {
-      saida.textContent = data.error || "Expressão inválida!";
-    }
-  } catch (erro) {
-    saida.textContent = "Erro ao conectar com a API.";
-  }
-}
-
-function mostrarFoto(event) {
-  const previewDiv = document.getElementById("preview");
-  const img = document.getElementById("imgPreview");
-  const arquivo = event.target.files[0];
-  if (arquivo) {
-    img.src = URL.createObjectURL(arquivo);
-    previewDiv.style.display = "block";
-  }
-}
-</script>
+        document.getElementById('image-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('image', document.getElementById('image-file').files[0]);
+            
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('result').innerText = JSON.stringify(data);
+        });
+    </script>
 </body>
 </html>
